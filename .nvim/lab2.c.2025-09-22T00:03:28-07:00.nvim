@@ -1,0 +1,39 @@
+#include <libgen.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+int main(void) {
+  char line[256];
+
+  printf("Enter programs to run.\n");
+  for (;;) {
+    printf("> ");
+    if (!fgets(line, sizeof(line), stdin)) {
+      continue; // just try again
+    }
+
+    int n = (int)strlen(line);
+    if (n > 0 && line[n - 1] == '\n')
+      line[n - 1] = '\0';
+
+    if (line[0] == '\0') {
+      continue;
+    }
+
+    pid_t pid = fork();
+    if (pid == 0) {
+      char *prog = basename(line);
+      execl(line, prog, (char *)NULL);
+      fprintf(stderr, "Exec failure\n");
+      _exit(1);
+    } else if (pid > 0) {
+      int status;
+      waitpid(pid, &status, 0);
+      printf("Enter programs to run.\n");
+    } else {
+      perror("fork");
+    }
+  }
+}
