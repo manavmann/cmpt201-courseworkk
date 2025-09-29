@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define N 5
+
+char *arr[N] = {0};
+int idx = 0;
+int cnt = 0;
+
+void init(void) {
+    for (int i = 0; i < N; i++) arr[i] = NULL;
+    idx = 0;
+    cnt = 0;
+}
+
+int is_print(const char *s) {
+    return strcmp(s, "print\n") == 0 || strcmp(s, "print") == 0;
+}
+
+void save(const char *s) {
+    if (arr[idx]) free(arr[idx]);
+    arr[idx] = strdup(s);
+    idx = (idx + 1) % N;
+    if (cnt < N) cnt++;
+}
+
+void show(void) {
+    int start = (cnt == N) ? idx : 0;
+    for (int i = 0; i < cnt; i++) {
+        int j = (start + i) % N;
+        fputs(arr[j], stdout);
+    }
+}
+
+void free_all(void) {
+    for (int i = 0; i < N; i++) free(arr[i]);
+}
+
+int main(void) {
+    char *line = NULL;
+    size_t cap = 0;
+
+    init();
+
+    for (;;) {
+        printf("Enter input: ");
+        fflush(stdout);
+        if (getline(&line, &cap, stdin) < 0) break;
+        save(line);
+        if (is_print(line)) show();
+    }
+
+    free(line);
+    free_all();
+    return 0;
+}
+
